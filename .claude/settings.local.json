@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(open:*)",
+      "WebSearch",
+      "WebFetch(domain:www.anthropic.com)",
+      "WebFetch(domain:www.cnet.com)",
+      "WebFetch(domain:indianexpress.com)",
+      "WebFetch(domain:aiwiki.ai)",
+      "WebFetch(domain:claudelog.com)"
+    ]
+  }
+}
