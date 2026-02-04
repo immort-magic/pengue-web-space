@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["file:///Users/wsyue/Data/A_Code/D_Python/E_VibeCoding/A_PersonalWeb/src/app/globals.css"],"sourcesContent":["/* Base styles live in /public/jack-space.css (extracted from jack-space.html) */\n"],"names":[],"mappings":""}}]
-}
