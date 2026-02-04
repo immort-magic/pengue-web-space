@@ -7,7 +7,7 @@ import SiteFooter from "../components/SiteFooter";
 import SiteHeader from "../components/SiteHeader";
 import SiteSidebar from "../components/SiteSidebar";
 
-import { GOODIES_CATEGORIES } from "./goodies-data";
+import { GOODIES_VISIBLE_CATEGORIES } from "./goodies-data";
 
 export default function GoodiesIndexPage() {
   const [typewriterText, setTypewriterText] = useState("");
@@ -69,7 +69,7 @@ export default function GoodiesIndexPage() {
           </div>
 
           <div className="goodies-grid">
-            {GOODIES_CATEGORIES.map((cat) => (
+            {GOODIES_VISIBLE_CATEGORIES.map((cat) => (
               <Link
                 key={cat.slug}
                 href={`/goodies/${cat.slug}`}

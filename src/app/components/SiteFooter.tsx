@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const SITE_START_DATE = "2024-01-01";
+const SITE_START_DATE = "2026-01-30";
 
 function formatClock(now: Date) {
   const hours = String(now.getHours()).padStart(2, "0");

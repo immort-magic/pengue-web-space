@@ -7,9 +7,11 @@ import SiteSidebar from "../../components/SiteSidebar";
 
 import {
   GOODIES_CATEGORIES,
+  GOODIES_VISIBLE_CATEGORIES,
   type GoodiesCategorySlug,
   GOODIES_ITEMS,
 } from "../goodies-data";
+import GoodiesTypewriter from "../GoodiesTypewriter";
 
 const CATEGORY_SET = new Set<string>(GOODIES_CATEGORIES.map((c) => c.slug));
 
@@ -17,18 +19,26 @@ function isCategorySlug(value: string): value is GoodiesCategorySlug {
   return CATEGORY_SET.has(value);
 }
 
-export default function GoodiesCategoryPage({
+export function generateStaticParams() {
+  return GOODIES_CATEGORIES.map((category) => ({
+    category: category.slug,
+  }));
+}
+
+export default async function GoodiesCategoryPage({
   params,
 }: {
-  params: { category: string };
+  params: Promise<{ category: string }>;
 }) {
-  const slug = params.category;
+  const { category: slug } = await params;
   if (!isCategorySlug(slug)) notFound();
 
   const current = GOODIES_CATEGORIES.find((c) => c.slug === slug);
   if (!current) notFound();
 
   const items = GOODIES_ITEMS[slug] ?? [];
+
+  const useTypewriter = slug === "apps" || slug === "sites" || slug === "plugins";
 
   return (
     <>
@@ -38,11 +48,15 @@ export default function GoodiesCategoryPage({
         <main className="goodies-section">
           <div className="goodies-hero">
             <div className="goodies-title">好东西 · {current.label}</div>
-            <div className="goodies-subtitle">{current.desc}</div>
+            {useTypewriter ? (
+              <GoodiesTypewriter text={`「${current.desc}」`} />
+            ) : (
+              <div className="goodies-subtitle">{current.desc}</div>
+            )}
           </div>
 
           <div className="goodies-tabs" aria-label="好东西分类">
-            {GOODIES_CATEGORIES.map((cat) => (
+            {GOODIES_VISIBLE_CATEGORIES.map((cat) => (
               <Link
                 key={cat.slug}
                 href={`/goodies/${cat.slug}`}
@@ -57,14 +71,22 @@ export default function GoodiesCategoryPage({
             <div className="goodies-empty">暂无内容（占位）</div>
           ) : (
             <div className="goodies-items">
-              {items.map((item) => (
+              {items.map((item) => {
+                const isExternal = Boolean(item.href?.startsWith("http"));
+                return (
                 <a
                   key={item.id}
                   className="goodies-item"
                   href={item.href ?? "#"}
+                  {...(isExternal
+                    ? { target: "_blank", rel: "noreferrer" }
+                    : undefined)}
                 >
                   <div className="goodies-item-head">
                     <div className="goodies-item-title">
+                      {item.icon ? (
+                        <span className="goodies-item-icon">{item.icon}</span>
+                      ) : null}
                       {item.title}
                       {item.badge ? (
                         <span className="goodies-badge">{item.badge}</span>
@@ -81,7 +103,8 @@ export default function GoodiesCategoryPage({
                     ))}
                   </div>
                 </a>
-              ))}
+              );
+              })}
             </div>
           )}
         </main>

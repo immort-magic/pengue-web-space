@@ -354,21 +354,22 @@ body {
     justify-content: center;
     padding: 8px 14px;
     border-radius: 999px;
-    border: 0.5px solid var(--border-color);
+    border: 0.5px solid #111111;
     text-decoration: none;
     background: var(--bg-color);
+    color: #111111;
     transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
 }
 
 .goodies-tab:hover {
-    border-color: var(--text-primary);
-    color: var(--text-primary);
+    border-color: #111111;
+    color: #111111;
 }
 
 .goodies-tab.active {
-    border-color: var(--text-primary);
-    background: var(--text-primary);
-    color: var(--bg-color);
+    border-color: #111111;
+    background: #111111;
+    color: #ffffff;
 }
 
 .goodies-tab-label {
@@ -464,6 +465,21 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-wrap: wrap;
+}
+
+.goodies-item-icon {
+    font-size: 16px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.goodies-typewriter {
+    margin-top: 14px;
+    color: var(--text-secondary);
+    font-size: 14px;
 }
 
 .goodies-badge {

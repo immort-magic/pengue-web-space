@@ -121,6 +121,32 @@ const ARTICLES: ArticleEntry[] = [
     author: "文思月",
     href: "https://icndkdfnybk8.feishu.cn/wiki/J5TWwOMYTigoJBk6O8lcsHBPnu9",
   },
+  {
+    id: "vibe-lesson-7",
+    title: "Vibe Coding 第七课：产品场景与桌面 MVP",
+    excerpt:
+      "从“坐下不知道下一步做什么”的痛点出发，评估价值与根因，选定 Mac 桌面版 OneStep，并实现最小功能验证。",
+    coverSrc: "/covers/lesson7.png",
+    coverAlt: "Vibe Coding 第七课",
+    category: "技术",
+    dateISO: "2026-02-05",
+    dateLabel: "2026年2月5日",
+    author: "文思月",
+    href: "https://icndkdfnybk8.feishu.cn/wiki/PSx0w7N9vi2wblkUAg3cxXqgnPe",
+  },
+  {
+    id: "vibe-lesson-8",
+    title: "Vibe Coding 第八课：课程毕业名片",
+    excerpt:
+      "整合痛点到产品的路演与学习复盘，展示 OneStep 的最小可行功能，并完成 GitHub + Vercel 的上线发布。",
+    coverSrc: "/covers/lesson8.png",
+    coverAlt: "Vibe Coding 第八课",
+    category: "技术",
+    dateISO: "2026-02-06",
+    dateLabel: "2026年2月6日",
+    author: "文思月",
+    href: "https://icndkdfnybk8.feishu.cn/wiki/BroKwZ8H5ijFWikSLyCc41T3nid?fromScene=spaceOverview",
+  },
 ];
 
 type ArticleRevealState = "hidden" | "revealing" | "revealed";
