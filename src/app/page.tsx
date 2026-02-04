@@ -21,6 +21,86 @@ const SITE_START_DATE = "2024-01-01";
 const ARTICLE_REVEAL_DURATION_MS = 650;
 const ARTICLE_REVEAL_FALLBACK_MS = 1200;
 
+const ARTICLE_NAV_ITEMS = ["首页", "生活", "技术", "摄影"] as const;
+
+type ArticleNavItem = (typeof ARTICLE_NAV_ITEMS)[number];
+type ArticleCategory = Exclude<ArticleNavItem, "首页">;
+
+type ArticleEntry = {
+  id: string;
+  title: string;
+  excerpt: string;
+  coverSrc: string;
+  coverAlt: string;
+  category: ArticleCategory;
+  dateISO: string;
+  dateLabel: string;
+  author: string;
+};
+
+const ARTICLES: ArticleEntry[] = [
+  {
+    id: "airpods-pro-2",
+    title: "AirPods Pro 2 使用体验分享",
+    excerpt:
+      "深度体验苹果最新降噪耳机，从音质、降噪效果到佩戴舒适度全方位评测，分享日常使用中的真实感受。",
+    coverSrc: "/covers/airpods.svg",
+    coverAlt: "AirPods Pro 2 使用体验分享",
+    category: "技术",
+    dateISO: "2024-03-15",
+    dateLabel: "2024年3月15日",
+    author: "Pengue",
+  },
+  {
+    id: "iphone-15-pro-max",
+    title: "iPhone 15 Pro Max 深度评测",
+    excerpt:
+      "钛金属边框、A17 Pro芯片、全新Action按钮，这款旗舰手机究竟值不值得升级？一个月深度使用后的真实体验。",
+    coverSrc: "/covers/iphone.svg",
+    coverAlt: "iPhone 15 Pro Max 深度评测",
+    category: "技术",
+    dateISO: "2024-03-10",
+    dateLabel: "2024年3月10日",
+    author: "Pengue",
+  },
+  {
+    id: "macbook-pro-m3",
+    title: "MacBook Pro M3 开箱体验",
+    excerpt:
+      "M3芯片带来的性能飞跃，太空黑配色的质感，以及作为开发者日常使用的真实感受，一起来看看这台新机器。",
+    coverSrc: "/covers/macbook.svg",
+    coverAlt: "MacBook Pro M3 开箱体验",
+    category: "技术",
+    dateISO: "2024-03-05",
+    dateLabel: "2024年3月5日",
+    author: "Pengue",
+  },
+  {
+    id: "apple-watch-ultra-2",
+    title: "Apple Watch Ultra 2 运动测评",
+    excerpt:
+      "户外跑步、游泳、骑行全场景测试，看看这款专业运动手表在实际运动中的表现如何，续航能否满足需求。",
+    coverSrc: "/covers/watch.svg",
+    coverAlt: "Apple Watch Ultra 2 运动测评",
+    category: "技术",
+    dateISO: "2024-02-28",
+    dateLabel: "2024年2月28日",
+    author: "Pengue",
+  },
+  {
+    id: "ipad-pro-2024",
+    title: "iPad Pro 2024 创作者视角",
+    excerpt:
+      "作为内容创作者的生产力工具，iPad Pro配合Apple Pencil和妙控键盘，能否真正替代笔记本电脑？",
+    coverSrc: "/covers/ipad.svg",
+    coverAlt: "iPad Pro 2024 创作者视角",
+    category: "技术",
+    dateISO: "2024-02-20",
+    dateLabel: "2024年2月20日",
+    author: "Pengue",
+  },
+];
+
 function formatClock(now: Date) {
   const hours = String(now.getHours()).padStart(2, "0");
   const minutes = String(now.getMinutes()).padStart(2, "0");
@@ -57,6 +137,8 @@ export default function Home() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [searchOpen, setSearchOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [activeArticleNav, setActiveArticleNav] =
+    useState<ArticleNavItem>("首页");
 
   const [readingProgress, setReadingProgress] = useState(0);
   const [showBackToTop, setShowBackToTop] = useState(false);
@@ -87,6 +169,26 @@ export default function Home() {
   const registerArticle = (index: number) => (node: HTMLElement | null) => {
     articleRefs.current[index] = node;
   };
+
+  const filteredArticles =
+    activeArticleNav === "首页"
+      ? [...ARTICLES].sort((a, b) => b.dateISO.localeCompare(a.dateISO))
+      : ARTICLES.filter((article) => article.category === activeArticleNav).sort(
+          (a, b) => b.dateISO.localeCompare(a.dateISO),
+        );
+
+  const totalArticles = filteredArticles.length;
+
+  useEffect(() => {
+    revealCleanupRef.current?.();
+    revealCleanupRef.current = null;
+    revealLockRef.current = false;
+    renderPendingRef.current = false;
+    setRevealingIndex(null);
+    setRevealedArticles(0);
+    setRenderedArticles(totalArticles > 0 ? 1 : 0);
+    articleRefs.current = [];
+  }, [activeArticleNav, totalArticles]);
 
   useEffect(() => {
     if (document.documentElement.getAttribute("data-theme") === "dark") {
@@ -191,10 +293,16 @@ export default function Home() {
     if (revealLockRef.current) return;
     if (revealingIndex !== null) return;
     if (revealedArticles !== renderedArticles) return;
-    if (renderedArticles >= 5) return;
+    if (renderedArticles >= totalArticles) return;
     renderPendingRef.current = true;
-    setRenderedArticles((count) => Math.min(5, count + 1));
-  }, [sentinelInView, renderedArticles, revealedArticles, revealingIndex]);
+    setRenderedArticles((count) => Math.min(totalArticles, count + 1));
+  }, [
+    sentinelInView,
+    renderedArticles,
+    revealedArticles,
+    revealingIndex,
+    totalArticles,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -303,6 +411,10 @@ export default function Home() {
     if (event.target === event.currentTarget) setSearchOpen(false);
   };
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+  const selectArticleNav = (nav: ArticleNavItem) => {
+    setActiveArticleNav(nav);
+    scrollToTop();
+  };
 
   return (
     <>
@@ -327,22 +439,52 @@ export default function Home() {
           <div className="nav-wrapper">
             <nav>
               <ul className="nav-menu">
+                <li className="has-submenu">
+                  <button className="nav-link active" type="button">
+                    博文 <span className="nav-caret">▾</span>
+                  </button>
+                  <ul className="nav-submenu" aria-label="文章分类">
+                    {ARTICLE_NAV_ITEMS.map((nav) => (
+                      <li key={nav}>
+                        <button
+                          type="button"
+                          className={`nav-submenu-link${
+                            activeArticleNav === nav ? " active" : ""
+                          }`}
+                          onClick={() => selectArticleNav(nav)}
+                        >
+                          {nav}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+                <li className="has-submenu">
+                  <button className="nav-link" type="button">
+                    抽屉 <span className="nav-caret">▾</span>
+                  </button>
+                  <ul className="nav-submenu" aria-label="抽屉">
+                    <li>
+                      <a href="#" className="nav-submenu-link">
+                        好东西
+                      </a>
+                    </li>
+                  </ul>
+                </li>
                 <li>
-                  <a href="#" className="active">
-                    博文
+                  <a href="#" className="nav-link">
+                    说说
                   </a>
                 </li>
                 <li>
-                  <a href="#">抽屉</a>
+                  <a href="#" className="nav-link">
+                    相册
+                  </a>
                 </li>
                 <li>
-                  <a href="#">说说</a>
-                </li>
-                <li>
-                  <a href="#">相册</a>
-                </li>
-                <li>
-                  <a href="#">关于</a>
+                  <a href="#" className="nav-link">
+                    关于
+                  </a>
                 </li>
               </ul>
             </nav>
@@ -406,200 +548,51 @@ export default function Home() {
             </div>
           </div>
 
-          {renderedArticles >= 1 ? (
-            <QueuedArticle
-              index={0}
-              register={registerArticle}
-              state={
-                0 < revealedArticles
-                  ? "revealed"
-                  : revealingIndex === 0
-                    ? "revealing"
-                    : "hidden"
-              }
-            >
-            <div className="article-cover">
-              <img
-                src="/covers/airpods.svg"
-                alt="AirPods Pro 2 使用体验分享"
-                loading="lazy"
-              />
+          {totalArticles === 0 ? (
+            <div className="article-empty">
+              暂无内容（{activeArticleNav}）
             </div>
-            <div className="article-content">
-              <div className="article-category">
-                <span className="article-category-icon">📦</span>
-                <span>好物</span>
-              </div>
-              <a href="#" className="article-title">
-                AirPods Pro 2 使用体验分享
-              </a>
-              <p className="article-excerpt">
-                深度体验苹果最新降噪耳机，从音质、降噪效果到佩戴舒适度全方位评测，分享日常使用中的真实感受。
-              </p>
-              <div className="article-meta">
-                <span>2024年3月15日</span>
-                <span className="article-meta-divider">/</span>
-                <a href="#">Pengue</a>
-              </div>
-            </div>
-            </QueuedArticle>
-          ) : null}
-
-          {renderedArticles >= 2 ? (
-            <QueuedArticle
-              index={1}
-              register={registerArticle}
-              state={
-                1 < revealedArticles
-                  ? "revealed"
-                  : revealingIndex === 1
-                    ? "revealing"
-                    : "hidden"
-              }
-            >
-            <div className="article-cover">
-              <img
-                src="/covers/iphone.svg"
-                alt="iPhone 15 Pro Max 深度评测"
-                loading="lazy"
-              />
-            </div>
-            <div className="article-content">
-              <div className="article-category">
-                <span className="article-category-icon">📦</span>
-                <span>好物</span>
-              </div>
-              <a href="#" className="article-title">
-                iPhone 15 Pro Max 深度评测
-              </a>
-              <p className="article-excerpt">
-                钛金属边框、A17 Pro芯片、全新Action按钮，这款旗舰手机究竟值不值得升级？一个月深度使用后的真实体验。
-              </p>
-              <div className="article-meta">
-                <span>2024年3月10日</span>
-                <span className="article-meta-divider">/</span>
-                <a href="#">Pengue</a>
-              </div>
-            </div>
-            </QueuedArticle>
-          ) : null}
-
-          {renderedArticles >= 3 ? (
-            <QueuedArticle
-              index={2}
-              register={registerArticle}
-              state={
-                2 < revealedArticles
-                  ? "revealed"
-                  : revealingIndex === 2
-                    ? "revealing"
-                    : "hidden"
-              }
-            >
-            <div className="article-cover">
-              <img
-                src="/covers/macbook.svg"
-                alt="MacBook Pro M3 开箱体验"
-                loading="lazy"
-              />
-            </div>
-            <div className="article-content">
-              <div className="article-category">
-                <span className="article-category-icon">📦</span>
-                <span>好物</span>
-              </div>
-              <a href="#" className="article-title">
-                MacBook Pro M3 开箱体验
-              </a>
-              <p className="article-excerpt">
-                M3芯片带来的性能飞跃，太空黑配色的质感，以及作为开发者日常使用的真实感受，一起来看看这台新机器。
-              </p>
-              <div className="article-meta">
-                <span>2024年3月5日</span>
-                <span className="article-meta-divider">/</span>
-                <a href="#">Pengue</a>
-              </div>
-            </div>
-            </QueuedArticle>
-          ) : null}
-
-          {renderedArticles >= 4 ? (
-            <QueuedArticle
-              index={3}
-              register={registerArticle}
-              state={
-                3 < revealedArticles
-                  ? "revealed"
-                  : revealingIndex === 3
-                    ? "revealing"
-                    : "hidden"
-              }
-            >
-            <div className="article-cover">
-              <img
-                src="/covers/watch.svg"
-                alt="Apple Watch Ultra 2 运动测评"
-                loading="lazy"
-              />
-            </div>
-            <div className="article-content">
-              <div className="article-category">
-                <span className="article-category-icon">📦</span>
-                <span>好物</span>
-              </div>
-              <a href="#" className="article-title">
-                Apple Watch Ultra 2 运动测评
-              </a>
-              <p className="article-excerpt">
-                户外跑步、游泳、骑行全场景测试，看看这款专业运动手表在实际运动中的表现如何，续航能否满足需求。
-              </p>
-              <div className="article-meta">
-                <span>2024年2月28日</span>
-                <span className="article-meta-divider">/</span>
-                <a href="#">Pengue</a>
-              </div>
-            </div>
-            </QueuedArticle>
-          ) : null}
-
-          {renderedArticles >= 5 ? (
-            <QueuedArticle
-              index={4}
-              register={registerArticle}
-              state={
-                4 < revealedArticles
-                  ? "revealed"
-                  : revealingIndex === 4
-                    ? "revealing"
-                    : "hidden"
-              }
-            >
-            <div className="article-cover">
-              <img
-                src="/covers/ipad.svg"
-                alt="iPad Pro 2024 创作者视角"
-                loading="lazy"
-              />
-            </div>
-            <div className="article-content">
-              <div className="article-category">
-                <span className="article-category-icon">📦</span>
-                <span>好物</span>
-              </div>
-              <a href="#" className="article-title">
-                iPad Pro 2024 创作者视角
-              </a>
-              <p className="article-excerpt">
-                作为内容创作者的生产力工具，iPad Pro配合Apple Pencil和妙控键盘，能否真正替代笔记本电脑？
-              </p>
-              <div className="article-meta">
-                <span>2024年2月20日</span>
-                <span className="article-meta-divider">/</span>
-                <a href="#">Pengue</a>
-              </div>
-            </div>
-            </QueuedArticle>
-          ) : null}
+          ) : (
+            filteredArticles
+              .slice(0, renderedArticles)
+              .map((article, index) => (
+                <QueuedArticle
+                  key={article.id}
+                  index={index}
+                  register={registerArticle}
+                  state={
+                    index < revealedArticles
+                      ? "revealed"
+                      : revealingIndex === index
+                        ? "revealing"
+                        : "hidden"
+                  }
+                >
+                  <div className="article-cover">
+                    <img
+                      src={article.coverSrc}
+                      alt={article.coverAlt}
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="article-content">
+                    <div className="article-category">
+                      <span className="article-category-icon">📦</span>
+                      <span>{article.category}</span>
+                    </div>
+                    <a href="#" className="article-title">
+                      {article.title}
+                    </a>
+                    <p className="article-excerpt">{article.excerpt}</p>
+                    <div className="article-meta">
+                      <span>{article.dateLabel}</span>
+                      <span className="article-meta-divider">/</span>
+                      <a href="#">{article.author}</a>
+                    </div>
+                  </div>
+                </QueuedArticle>
+              ))
+          )}
 
           <div ref={sentinelRef} aria-hidden="true" style={{ height: 1 }} />
         </main>
