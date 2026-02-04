@@ -39,68 +39,87 @@ type ArticleEntry = {
   dateISO: string;
   dateLabel: string;
   author: string;
+  href?: string;
 };
 
 const ARTICLES: ArticleEntry[] = [
   {
-    id: "airpods-pro-2",
-    title: "AirPods Pro 2 使用体验分享",
+    id: "vibe-lesson-1",
+    title: "Vibe Coding 第一课：痛点与最小行动",
     excerpt:
-      "深度体验苹果最新降噪耳机，从音质、降噪效果到佩戴舒适度全方位评测，分享日常使用中的真实感受。",
-    coverSrc: "/covers/airpods.svg",
-    coverAlt: "AirPods Pro 2 使用体验分享",
+      "从生活痛点中找到最值得解决的场景，聚焦“明确下一步行动”这个核心需求，并给出最小可行产品的核心链路与组件选择。",
+    coverSrc: "/covers/lesson1.png",
+    coverAlt: "Vibe Coding 第一课",
     category: "技术",
-    dateISO: "2024-03-15",
-    dateLabel: "2024年3月15日",
-    author: "Pengue",
+    dateISO: "2026-01-30",
+    dateLabel: "2026年1月30日",
+    author: "文思月",
+    href: "https://icndkdfnybk8.feishu.cn/wiki/THnvwzfc0iwLz3kZczqcYAcKnXb",
   },
   {
-    id: "iphone-15-pro-max",
-    title: "iPhone 15 Pro Max 深度评测",
+    id: "vibe-lesson-2",
+    title: "Vibe Coding 第二课：OneStep 需求与范围",
     excerpt:
-      "钛金属边框、A17 Pro芯片、全新Action按钮，这款旗舰手机究竟值不值得升级？一个月深度使用后的真实体验。",
-    coverSrc: "/covers/iphone.svg",
-    coverAlt: "iPhone 15 Pro Max 深度评测",
+      "围绕“启动任务的第一步”拆解产品目标、功能范围与页面流程，明确登录、显示、设置等核心模块与数据指标。",
+    coverSrc: "/covers/lesson2.png",
+    coverAlt: "Vibe Coding 第二课",
     category: "技术",
-    dateISO: "2024-03-10",
-    dateLabel: "2024年3月10日",
-    author: "Pengue",
+    dateISO: "2026-01-31",
+    dateLabel: "2026年1月31日",
+    author: "文思月",
+    href: "https://icndkdfnybk8.feishu.cn/wiki/R9VmwFyqhiyMFak9QJocR9QWnHb",
   },
   {
-    id: "macbook-pro-m3",
-    title: "MacBook Pro M3 开箱体验",
+    id: "vibe-lesson-3",
+    title: "Vibe Coding 第三课：LLM 接入与自动化",
     excerpt:
-      "M3芯片带来的性能飞跃，太空黑配色的质感，以及作为开发者日常使用的真实感受，一起来看看这台新机器。",
-    coverSrc: "/covers/macbook.svg",
-    coverAlt: "MacBook Pro M3 开箱体验",
+      "在 OneStep 中接入 GLM-4-Plus 实现任务拆解，使用 Supabase Edge Function 调通鉴权并落地飞书提醒的自动化方案。",
+    coverSrc: "/covers/lesson3.png",
+    coverAlt: "Vibe Coding 第三课",
     category: "技术",
-    dateISO: "2024-03-05",
-    dateLabel: "2024年3月5日",
-    author: "Pengue",
+    dateISO: "2026-02-01",
+    dateLabel: "2026年2月1日",
+    author: "文思月",
+    href: "https://icndkdfnybk8.feishu.cn/wiki/PAwpwmVDUiYm8fkgpBpcHZ0VnGg",
   },
   {
-    id: "apple-watch-ultra-2",
-    title: "Apple Watch Ultra 2 运动测评",
+    id: "vibe-lesson-4",
+    title: "Vibe Coding 第四课：作业润色 Skill",
     excerpt:
-      "户外跑步、游泳、骑行全场景测试，看看这款专业运动手表在实际运动中的表现如何，续航能否满足需求。",
-    coverSrc: "/covers/watch.svg",
-    coverAlt: "Apple Watch Ultra 2 运动测评",
+      "为作业复盘场景创建专用 Skill，基于优秀作业标准做评审与改写，并总结更适合自己的写作风格约束。",
+    coverSrc: "/covers/lesson4.png",
+    coverAlt: "Vibe Coding 第四课",
     category: "技术",
-    dateISO: "2024-02-28",
-    dateLabel: "2024年2月28日",
-    author: "Pengue",
+    dateISO: "2026-02-02",
+    dateLabel: "2026年2月2日",
+    author: "文思月",
+    href: "https://icndkdfnybk8.feishu.cn/wiki/QMkiw2SCmiYZpXkqqEGcwr7GnPd",
   },
   {
-    id: "ipad-pro-2024",
-    title: "iPad Pro 2024 创作者视角",
+    id: "vibe-lesson-5",
+    title: "Vibe Coding 第五课：主页版本迭代",
     excerpt:
-      "作为内容创作者的生产力工具，iPad Pro配合Apple Pencil和妙控键盘，能否真正替代笔记本电脑？",
-    coverSrc: "/covers/ipad.svg",
-    coverAlt: "iPad Pro 2024 创作者视角",
+      "从对标站点找风格，完成 v0.1.0 到 v0.1.3 的多次迭代，加入键盘字输出、头像替换与 hover 动效，并反思模型与成本选择。",
+    coverSrc: "/covers/lesson5.png",
+    coverAlt: "Vibe Coding 第五课",
     category: "技术",
-    dateISO: "2024-02-20",
-    dateLabel: "2024年2月20日",
-    author: "Pengue",
+    dateISO: "2026-02-03",
+    dateLabel: "2026年2月3日",
+    author: "文思月",
+    href: "https://icndkdfnybk8.feishu.cn/wiki/IyWfwUBpCiAroEkKWZUcXWC2nyi",
+  },
+  {
+    id: "vibe-lesson-6",
+    title: "Vibe Coding 第六课：GitHub + Vercel",
+    excerpt:
+      "完成 GitHub 配置与 Vercel 部署，解决私密邮箱导致的推送问题，并记录版本发布与文章动效的迭代过程。",
+    coverSrc: "/covers/lesson6.png",
+    coverAlt: "Vibe Coding 第六课",
+    category: "技术",
+    dateISO: "2026-02-04",
+    dateLabel: "2026年2月4日",
+    author: "文思月",
+    href: "https://icndkdfnybk8.feishu.cn/wiki/J5TWwOMYTigoJBk6O8lcsHBPnu9",
   },
 ];
 
@@ -406,14 +425,23 @@ function HomeContent() {
                       <span className="article-category-icon">📦</span>
                       <span>{article.category}</span>
                     </div>
-                    <a href="#" className="article-title">
-                      {article.title}
-                    </a>
+                    {article.href ? (
+                      <a
+                        href={article.href}
+                        className="article-title"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {article.title}
+                      </a>
+                    ) : (
+                      <span className="article-title">{article.title}</span>
+                    )}
                     <p className="article-excerpt">{article.excerpt}</p>
                     <div className="article-meta">
                       <span>{article.dateLabel}</span>
                       <span className="article-meta-divider">/</span>
-                      <a href="#">{article.author}</a>
+                      <span>{article.author}</span>
                     </div>
                   </div>
                 </QueuedArticle>
