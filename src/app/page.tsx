@@ -1,6 +1,12 @@
 "use client";
 
-import { type MouseEvent, useEffect, useRef, useState } from "react";
+import {
+  type MouseEvent,
+  type ReactNode,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 const QUOTES = [
   "「我所分享的东西将通过一串串比特流流向你所在的远方，如果这些东西能让你感受到共鸣，我想这便是奇迹!」",
@@ -12,11 +18,39 @@ const QUOTES = [
 
 const SITE_START_DATE = "2024-01-01";
 
+const ARTICLE_REVEAL_DURATION_MS = 650;
+const ARTICLE_REVEAL_FALLBACK_MS = 1200;
+
 function formatClock(now: Date) {
   const hours = String(now.getHours()).padStart(2, "0");
   const minutes = String(now.getMinutes()).padStart(2, "0");
   const seconds = String(now.getSeconds()).padStart(2, "0");
   return `${hours}:${minutes}:${seconds}`;
+}
+
+type ArticleRevealState = "hidden" | "revealing" | "revealed";
+
+function QueuedArticle({
+  index,
+  state,
+  register,
+  children,
+}: {
+  index: number;
+  state: ArticleRevealState;
+  register: (index: number) => (node: HTMLElement | null) => void;
+  children: ReactNode;
+}) {
+  return (
+    <article
+      ref={register(index)}
+      className="article-item"
+      data-reveal={state}
+      data-article-index={index}
+    >
+      {children}
+    </article>
+  );
 }
 
 export default function Home() {
@@ -35,6 +69,24 @@ export default function Home() {
   const quoteIndexRef = useRef(0);
   const charIndexRef = useRef(0);
   const isDeletingRef = useRef(false);
+
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [renderedArticles, setRenderedArticles] = useState(1);
+  const [revealedArticles, setRevealedArticles] = useState(0);
+  const [revealingIndex, setRevealingIndex] = useState<number | null>(null);
+  const [sentinelInView, setSentinelInView] = useState(false);
+  const renderedArticlesRef = useRef(renderedArticles);
+  const revealedArticlesRef = useRef(revealedArticles);
+  const revealingIndexRef = useRef<number | null>(revealingIndex);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const renderPendingRef = useRef(false);
+  const revealCleanupRef = useRef<(() => void) | null>(null);
+  const revealLockRef = useRef(false);
+
+  const articleRefs = useRef<Array<HTMLElement | null>>([]);
+  const registerArticle = (index: number) => (node: HTMLElement | null) => {
+    articleRefs.current[index] = node;
+  };
 
   useEffect(() => {
     if (document.documentElement.getAttribute("data-theme") === "dark") {
@@ -87,6 +139,16 @@ export default function Home() {
   }, [searchOpen]);
 
   useEffect(() => {
+    const media = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+    if (!media) return;
+
+    const update = () => setPrefersReducedMotion(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
     const onScroll = () => {
       const scrollTop = window.scrollY;
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
@@ -98,6 +160,101 @@ export default function Home() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    renderedArticlesRef.current = renderedArticles;
+    revealedArticlesRef.current = revealedArticles;
+    revealingIndexRef.current = revealingIndex;
+    renderPendingRef.current = false;
+  }, [renderedArticles, revealedArticles, revealingIndex]);
+
+  useEffect(() => {
+    const target = sentinelRef.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        const inView = Boolean(entry?.isIntersecting);
+        setSentinelInView(inView);
+      },
+      { root: null, rootMargin: "0px", threshold: 0 },
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!sentinelInView) return;
+    if (renderPendingRef.current) return;
+    if (revealLockRef.current) return;
+    if (revealingIndex !== null) return;
+    if (revealedArticles !== renderedArticles) return;
+    if (renderedArticles >= 5) return;
+    renderPendingRef.current = true;
+    setRenderedArticles((count) => Math.min(5, count + 1));
+  }, [sentinelInView, renderedArticles, revealedArticles, revealingIndex]);
+
+  useEffect(() => {
+    return () => {
+      revealCleanupRef.current?.();
+      revealCleanupRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setRevealedArticles(renderedArticles);
+      setRevealingIndex(null);
+      revealCleanupRef.current?.();
+      revealCleanupRef.current = null;
+      revealLockRef.current = false;
+      return;
+    }
+
+    if (revealLockRef.current || revealingIndex !== null) return;
+    if (revealedArticles >= renderedArticles) return;
+
+    const nextIndex = revealedArticles;
+    const element = articleRefs.current[nextIndex];
+    if (!element) {
+      setRevealedArticles((count) => Math.min(renderedArticles, count + 1));
+      return;
+    }
+
+    revealLockRef.current = true;
+
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      revealCleanupRef.current?.();
+      revealCleanupRef.current = null;
+      revealLockRef.current = false;
+      setRevealingIndex(null);
+      setRevealedArticles((count) => Math.min(renderedArticles, count + 1));
+    };
+
+    const onAnimationEnd = (event: AnimationEvent) => {
+      if (event.target !== element) return;
+      if (event.animationName !== "articleEnter") return;
+      finish();
+    };
+
+    element.addEventListener("animationend", onAnimationEnd);
+    const timeoutId = window.setTimeout(
+      finish,
+      ARTICLE_REVEAL_FALLBACK_MS + ARTICLE_REVEAL_DURATION_MS,
+    );
+
+    revealCleanupRef.current = () => {
+      window.clearTimeout(timeoutId);
+      element.removeEventListener("animationend", onAnimationEnd);
+    };
+
+    setRevealingIndex(nextIndex);
+  }, [prefersReducedMotion, renderedArticles, revealedArticles, revealingIndex]);
 
   useEffect(() => {
     const step = () => {
@@ -249,7 +406,18 @@ export default function Home() {
             </div>
           </div>
 
-          <article className="article-item">
+          {renderedArticles >= 1 ? (
+            <QueuedArticle
+              index={0}
+              register={registerArticle}
+              state={
+                0 < revealedArticles
+                  ? "revealed"
+                  : revealingIndex === 0
+                    ? "revealing"
+                    : "hidden"
+              }
+            >
             <div className="article-cover">
               <img
                 src="/covers/airpods.svg"
@@ -274,9 +442,21 @@ export default function Home() {
                 <a href="#">Pengue</a>
               </div>
             </div>
-          </article>
+            </QueuedArticle>
+          ) : null}
 
-          <article className="article-item">
+          {renderedArticles >= 2 ? (
+            <QueuedArticle
+              index={1}
+              register={registerArticle}
+              state={
+                1 < revealedArticles
+                  ? "revealed"
+                  : revealingIndex === 1
+                    ? "revealing"
+                    : "hidden"
+              }
+            >
             <div className="article-cover">
               <img
                 src="/covers/iphone.svg"
@@ -301,9 +481,21 @@ export default function Home() {
                 <a href="#">Pengue</a>
               </div>
             </div>
-          </article>
+            </QueuedArticle>
+          ) : null}
 
-          <article className="article-item">
+          {renderedArticles >= 3 ? (
+            <QueuedArticle
+              index={2}
+              register={registerArticle}
+              state={
+                2 < revealedArticles
+                  ? "revealed"
+                  : revealingIndex === 2
+                    ? "revealing"
+                    : "hidden"
+              }
+            >
             <div className="article-cover">
               <img
                 src="/covers/macbook.svg"
@@ -328,9 +520,21 @@ export default function Home() {
                 <a href="#">Pengue</a>
               </div>
             </div>
-          </article>
+            </QueuedArticle>
+          ) : null}
 
-          <article className="article-item">
+          {renderedArticles >= 4 ? (
+            <QueuedArticle
+              index={3}
+              register={registerArticle}
+              state={
+                3 < revealedArticles
+                  ? "revealed"
+                  : revealingIndex === 3
+                    ? "revealing"
+                    : "hidden"
+              }
+            >
             <div className="article-cover">
               <img
                 src="/covers/watch.svg"
@@ -355,9 +559,21 @@ export default function Home() {
                 <a href="#">Pengue</a>
               </div>
             </div>
-          </article>
+            </QueuedArticle>
+          ) : null}
 
-          <article className="article-item">
+          {renderedArticles >= 5 ? (
+            <QueuedArticle
+              index={4}
+              register={registerArticle}
+              state={
+                4 < revealedArticles
+                  ? "revealed"
+                  : revealingIndex === 4
+                    ? "revealing"
+                    : "hidden"
+              }
+            >
             <div className="article-cover">
               <img
                 src="/covers/ipad.svg"
@@ -382,7 +598,10 @@ export default function Home() {
                 <a href="#">Pengue</a>
               </div>
             </div>
-          </article>
+            </QueuedArticle>
+          ) : null}
+
+          <div ref={sentinelRef} aria-hidden="true" style={{ height: 1 }} />
         </main>
 
         <aside className="sidebar">
