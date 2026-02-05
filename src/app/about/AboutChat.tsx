@@ -110,7 +110,7 @@ export default function AboutChat() {
     const content = input.trim();
     if (!content || isSending) return;
 
-    const nextMessages = [
+    const nextMessages: ChatMessage[] = [
       ...messages,
       { id: createId(), role: "user", content },
     ];
