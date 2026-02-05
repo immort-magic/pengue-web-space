@@ -130,6 +130,11 @@ export default function SiteHeader({
                         好东西
                       </Link>
                     </li>
+                    <li>
+                      <Link href="/about" className="nav-submenu-link">
+                        关于我
+                      </Link>
+                    </li>
                   </ul>
                 </li>
 
@@ -144,9 +149,9 @@ export default function SiteHeader({
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="nav-link">
+                  <Link href="/about" className="nav-link">
                     关于
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </nav>
@@ -203,4 +208,3 @@ export default function SiteHeader({
     </>
   );
 }
-
